@@ -8,7 +8,7 @@ int main(int ac, char **av)
     {
         if (ac != 2)
             throw std::string("Error: invalid number of arguments.");
-        RPN(std::string(av[1]));
+        RPN rpn(std::string(av[1]));
     }
     catch(std::string err)
     {

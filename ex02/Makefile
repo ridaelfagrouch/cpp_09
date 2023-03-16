@@ -2,9 +2,9 @@ CFILES = main.cpp PmergeMe.cpp
 OFILES = ${CFILES:.cpp=.opp}
 
 CXX = c++
-HEADER = PmergeMe.cpp.hpp
+HEADER = PmergeMe.hpp
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address 
-NAME = PmergeMe.cpp
+NAME = PmergeMe
 
 all : ${OFILES}
 	@${CXX} ${CXXFLAGS} ${CFILES} -o ${NAME}
