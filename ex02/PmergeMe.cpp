@@ -13,54 +13,96 @@ bool isNumber(std::string str)
 
 //-----------------------------------------------------------------------
 
-long int getTimeMs()
-{
-	struct timeval tp;
-	
-	gettimeofday(&tp, NULL);
-	return (tp.tv_sec * 1000000 + tp.tv_usec);
-}
 
-//-----------------------------------------------------------------------
-
-PmergeMe::PmergeMe(std::string input)
+void PmergeMe::sortAlgoD(std::string str)
 {
-    std::stringstream str(input);
+    // std::deque data management
+
+    startTimeD = std::clock();
+    int key;
+    std::stringstream ptr(str);
     std::string tmp;
 
-    while(std::getline(str, tmp, ' '))
+    while(std::getline(ptr, tmp, ' '))
     {
         if (isNumber(tmp))
-            insertSort.push_back(atoi(tmp.c_str()));
+            insertSortDeque.push_back(atoi(tmp.c_str()));
         else
             throw std::string("Error");
         tmp.clear();
     }
+    input = str;
 
-    startTime = getTimeMs();
-    int key;
-    for (int i = 1; i < (int)insertSort.size(); i++)
+    // std::deque sorting
+
+    for (int i = 1; i < (int)insertSortDeque.size(); i++)
     {
-        key = insertSort[i];
+        key = insertSortDeque.at(i);
         int j = i - 1;
-        for (;j >= 0 && insertSort[j] > key; j--)
-            insertSort[j + 1] = insertSort[j];
-        insertSort[j + 1] = key;
+        for (;j >= 0 && insertSortDeque.at(j) > key; j--)
+            insertSortDeque.at(j+1) = insertSortDeque.at(j);
+        insertSortDeque.at(j+1) = key;
     }
+    endTimeD = std::clock() - startTimeD;
+
+    std::cout << "Time to process a range of " << insertSortDeque.size() << " elements with std::deque : " << (float)endTimeD/1000 << " us" << std::endl;
+}
+
+//-----------------------------------------------------------------------
+
+void PmergeMe::sortAlgoV(std::string str)
+{
+    // std::vector data management
+
+    startTimeV = std::clock();
+    int key;
+    std::stringstream ptr(str);
+    std::string tmp;
+
+    while(std::getline(ptr, tmp, ' '))
+    {
+        if (isNumber(tmp))
+            insertSortVector.push_back(atoi(tmp.c_str()));
+        else
+            throw std::string("Error");
+        tmp.clear();
+    }
+    input = str;
+
+    // std::vector sorting
+
+    for (int i = 1; i < (int)insertSortVector.size(); i++)
+    {
+        key = insertSortVector[i];
+        int j = i - 1;
+        for (;j >= 0 && insertSortVector[j] > key; j--)
+            insertSortVector[j + 1] = insertSortVector[j];
+        insertSortVector[j + 1] = key;
+    }
+
+    endTimeV = std::clock() - startTimeV;
 
     std::cout << "Before:  " << input << std::endl;
     std::cout << "After:   ";
-    std::vector<int>::iterator it = insertSort.begin();
-    for(; it != insertSort.end(); it++)
+    std::vector<int>::iterator it = insertSortVector.begin();
+    for(; it != insertSortVector.end(); it++)
         std::cout << *it << " ";
     std::cout << std::endl;
 
-    std::cout << "Time to process a range of 5 elements with std::[..] : " << getTimeMs() - startTime << " us" << std::endl;
+    std::cout << "Time to process a range of " << insertSortVector.size() << " elements with std::vector : " << (float)endTimeV/1000 << " us" << std::endl;
+}
+
+//-----------------------------------------------------------------------
+
+PmergeMe::PmergeMe(std::string str)
+{
+    sortAlgoV(str);
+    sortAlgoD(str);
 }
 
 //-----------------------------------------------------------------------
 
 PmergeMe::~PmergeMe()
 {
-    insertSort.clear();
+    insertSortVector.clear();
 }
