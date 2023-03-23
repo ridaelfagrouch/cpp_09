@@ -3,7 +3,7 @@ OFILES = ${CFILES:.cpp=.opp}
 
 CXX = c++
 HEADER = BitcoinExchange.hpp
-CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address 
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98
 NAME = btc
 
 all : ${OFILES}

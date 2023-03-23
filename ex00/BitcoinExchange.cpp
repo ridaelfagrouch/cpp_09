@@ -2,19 +2,19 @@
 
 void BitcoinExchange::storDataBase(void)
 {
-    std::ifstream   fileStream;
-    std::string     line;
+    std::ifstream fileStream;
+    std::string line;
 
     fileStream.open("data.csv");
     if (fileStream.is_open())
     {
-        if(!std::getline(fileStream, line).eof())
+        if (!std::getline(fileStream, line).eof())
         {
             line.clear();
             while (!std::getline(fileStream, line).eof())
             {
                 trim(line, ' ');
-                while (line.size() == 0)
+                if (line.size() == 0)
                     continue;
                 std::stringstream str(line);
                 std::getline(str, tmp1, ',');
@@ -28,6 +28,8 @@ void BitcoinExchange::storDataBase(void)
                 str.clear();
             }
         }
+        else
+            throw std::string("Error: file dataBase is empty.");
     }
     else
         throw std::string("Error: could not open file.");
@@ -51,8 +53,8 @@ int BitcoinExchange::checkFile(std::string file)
 
 void BitcoinExchange::trim(std::string &s, char c)
 {
-	std::string  str;
-	size_t index = s.find_first_not_of(c);
+    std::string str;
+    size_t index = s.find_first_not_of(c);
     if (index != std::string::npos)
         str += s.substr(index);
     index = str.find_last_not_of(c);
@@ -60,18 +62,27 @@ void BitcoinExchange::trim(std::string &s, char c)
     {
         str = str.substr(0, index + 1);
     }
-	s = str;
+    s = str;
 }
 
 //-----------------------------------------------------------------------
 
 bool isNumber(std::string str)
 {
-	char c;
-    for (int i = 0; i < (int)str.length() ; i++) {
-		c = str[i];
-        if (c == '.' || c == '-') continue;
-        if (std::isdigit(c) == 0) return false;
+    char c;
+    int count = 0;
+    for (int i = 0; i < (int)str.length(); i++)
+    {
+        c = str[i];
+        if (c == '.' || (c == '-' && i == 0))
+        {
+            count++;
+            if (count > 1)
+                return false;
+            continue;
+        }
+        if (std::isdigit(c) == 0)
+            return false;
     }
     return true;
 }
@@ -82,29 +93,30 @@ int BitcoinExchange::parseDate(std::string date)
 {
     std::stringstream ss(date);
     count = 0;
-    while(std::getline(ss, temp, '-'))
+    while (std::getline(ss, temp, '-'))
     {
         if (count == 0 && !(isNumber(temp) && temp.length() == 4))
             return (temp.clear(), ss.clear(), -1);
         if (count == 1 && !(isNumber(temp) && temp.length() == 2 && atoi(temp.c_str()) > 0 && atoi(temp.c_str()) < 13))
             return (temp.clear(), ss.clear(), -1);
-        if (count == 2  && !(isNumber(temp) && temp.length() == 2 && atoi(temp.c_str()) > 0 && atoi(temp.c_str()) < 31))
+        if (count == 2 && !(isNumber(temp) && temp.length() == 2 && atoi(temp.c_str()) > 0 && atoi(temp.c_str()) <= 31))
             return (temp.clear(), ss.clear(), -1);
         count++;
     }
-    if (count == 3)
-        return (ss.clear(),1);
-    return (ss.clear(), 0);
+    if (count == 3 && date[date.length() - 1] != '-')
+        return (ss.clear(), 1);
+    return (ss.clear(), -1);
 }
 
 //-----------------------------------------------------------------------
 
 int BitcoinExchange::parseValue(std::string value)
 {
+    char *end;
     std::stringstream ss(value);
-    if(!isNumber(value))
+    if (!isNumber(value))
         return (ss.clear(), -1);
-    else if (value.size() >= 10)
+    else if (strtod(value.c_str(), &end) > 1000)
         return (ss.clear(), -2);
     else if (atoi(value.c_str()) < 0)
         return (ss.clear(), -3);
@@ -113,7 +125,7 @@ int BitcoinExchange::parseValue(std::string value)
 
 //-----------------------------------------------------------------------
 
-void    BitcoinExchange::outputData(std::string &line)
+void BitcoinExchange::outputData(std::string &line)
 {
     std::stringstream str(line);
     std::getline(str, tmp1, '|');
@@ -123,11 +135,11 @@ void    BitcoinExchange::outputData(std::string &line)
     trim(tmp2, ' ');
     str.clear();
     tmp2.size() > 0 ? check2 = parseValue(tmp2) : throw std::string("bad input");
-    if(check1 == 1 && check2 == 1)
+    if (check1 == 1 && check2 == 1)
     {
         char *end;
         std::map<std::string, std::string>::iterator it = dataBase.lower_bound(tmp1.c_str());
-        if(it->first != tmp1 && it != dataBase.begin())
+        if (it->first != tmp1 && it != dataBase.begin())
             it--;
         std::cout << tmp1 << " => " << tmp2 + " = " << strtod(it->second.c_str(), &end) * strtod(tmp2.c_str(), &end) << std::endl;
         tmp1.clear();
@@ -139,7 +151,6 @@ void    BitcoinExchange::outputData(std::string &line)
         throw std::string("too large a number.");
     if (check2 == -3)
         throw std::string("not a positive number.");
-   
 }
 
 //-----------------------------------------------------------------------
@@ -149,7 +160,7 @@ void BitcoinExchange::processLine(std::string line)
     std::stringstream ss(line);
 
     count = 0;
-    while(std::getline(ss, temp, '|'))
+    while (std::getline(ss, temp, '|'))
     {
         count++;
         temp.clear();
@@ -157,9 +168,11 @@ void BitcoinExchange::processLine(std::string line)
     ss.clear();
     try
     {
+        if (line[line.length() - 1] == '|')
+            throw std::string("bad input");
         count == 2 ? outputData(line) : throw std::string("bad input");
     }
-    catch(std::string err)
+    catch (std::string err)
     {
         if (err == "bad input")
         {
@@ -177,20 +190,22 @@ void BitcoinExchange::processLine(std::string line)
 
 BitcoinExchange::BitcoinExchange(std::string file)
 {
-    std::ifstream   fileStream;
-    std::string     line;
+    std::ifstream fileStream;
+    std::string line;
 
-    
     storDataBase();
-    if(checkFile(file))
+    if (dataBase.size() == 0)
+        throw std::string("Error: no data in database.");
+    if (checkFile(file))
     {
         fileStream.open(file.c_str());
         if (fileStream.is_open())
         {
             while (!std::getline(fileStream, line).eof())
             {
-                if(line.size() == 0)
+                if (line.size() == 0)
                     continue;
+                trim(line, ' ');
                 processLine(line);
                 line.clear();
             }

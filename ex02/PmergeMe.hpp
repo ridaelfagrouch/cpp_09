@@ -15,8 +15,8 @@
 class PmergeMe
 {
     private:
-        std::vector<int> insertSortVector;
-        std::deque<int> insertSortDeque;
+        std::vector<int> SortVector;
+        std::deque<int> SortDeque;
         std::string input;
 
         clock_t startTimeV;

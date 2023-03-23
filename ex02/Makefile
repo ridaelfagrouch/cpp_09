@@ -3,7 +3,7 @@ OFILES = ${CFILES:.cpp=.opp}
 
 CXX = c++
 HEADER = PmergeMe.hpp
-CXXFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address 
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98
 NAME = PmergeMe
 
 all : ${OFILES}
