@@ -8,18 +8,18 @@ void BitcoinExchange::storDataBase(void)
     fileStream.open("data.csv");
     if (fileStream.is_open())
     {
-        if (!std::getline(fileStream, line).eof())
+        if (getline(fileStream, line))
         {
             line.clear();
-            while (!std::getline(fileStream, line).eof())
+            while (getline(fileStream, line))
             {
                 trim(line, ' ');
                 if (line.size() == 0)
                     continue;
                 std::stringstream str(line);
-                std::getline(str, tmp1, ',');
+                getline(str, tmp1, ',');
                 trim(tmp1, ' ');
-                std::getline(str, tmp2, ',');
+                getline(str, tmp2, ',');
                 trim(tmp2, ' ');
                 dataBase.insert(std::pair<std::string, std::string>(tmp1, tmp2));
                 tmp1.clear();
@@ -42,8 +42,8 @@ int BitcoinExchange::checkFile(std::string file)
     std::stringstream ss(file);
 
     std::string line;
-    std::getline(ss, line, '.');
-    std::getline(ss, line, '.');
+    getline(ss, line, '.');
+    getline(ss, line, '.');
     if (line == "txt")
         return (ss.clear(), line.clear(), 1);
     return (ss.clear(), line.clear(), 0);
@@ -93,7 +93,7 @@ int BitcoinExchange::parseDate(std::string date)
 {
     std::stringstream ss(date);
     count = 0;
-    while (std::getline(ss, temp, '-'))
+    while (getline(ss, temp, '-'))
     {
         if (count == 0 && !(isNumber(temp) && temp.length() == 4))
             return (temp.clear(), ss.clear(), -1);
@@ -128,10 +128,10 @@ int BitcoinExchange::parseValue(std::string value)
 void BitcoinExchange::outputData(std::string &line)
 {
     std::stringstream str(line);
-    std::getline(str, tmp1, '|');
+    getline(str, tmp1, '|');
     trim(tmp1, ' ');
     tmp1.size() > 0 ? check1 = parseDate(tmp1) : throw std::string("bad input");
-    std::getline(str, tmp2, '|');
+    getline(str, tmp2, '|');
     trim(tmp2, ' ');
     str.clear();
     tmp2.size() > 0 ? check2 = parseValue(tmp2) : throw std::string("bad input");
@@ -160,7 +160,7 @@ void BitcoinExchange::processLine(std::string line)
     std::stringstream ss(line);
 
     count = 0;
-    while (std::getline(ss, temp, '|'))
+    while (getline(ss, temp, '|'))
     {
         count++;
         temp.clear();
@@ -201,14 +201,19 @@ BitcoinExchange::BitcoinExchange(std::string file)
         fileStream.open(file.c_str());
         if (fileStream.is_open())
         {
-            while (!std::getline(fileStream, line).eof())
+            if (getline(fileStream, line))
             {
-                if (line.size() == 0)
-                    continue;
-                trim(line, ' ');
-                processLine(line);
-                line.clear();
+                while (getline(fileStream, line))
+                {
+                    if (line.size() == 0)
+                        continue;
+                    trim(line, ' ');
+                    processLine(line);
+                    line.clear();
+                }
             }
+            else
+                throw std::string("Error: empty file.");
         }
         else
             throw std::string("Error: could not open file.");

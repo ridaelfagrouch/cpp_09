@@ -85,7 +85,7 @@ void PmergeMe::sortAlgoD(std::string str)
     std::stringstream ptr(str);
     std::string tmp;
 
-    while(std::getline(ptr, tmp, ' '))
+    while(getline(ptr, tmp, ' '))
     {
         if (isNumber(tmp))
             SortDeque.push_back(atoi(tmp.c_str()));
@@ -113,7 +113,7 @@ void PmergeMe::sortAlgoV(std::string str)
     std::stringstream ptr(str);
     std::string tmp;
 
-    while(std::getline(ptr, tmp, ' '))
+    while(getline(ptr, tmp, ' '))
     {
         if (isNumber(tmp))
             SortVector.push_back(atoi(tmp.c_str()));
